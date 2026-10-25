@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>四邊形王國選士兵 - 小四數學互動教學 APP</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for Celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Noto+Sans+TC:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0fdf4;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .font-header {
+            font-family: 'Chakra Petch', 'Noto Sans TC', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #86efac;
+            border-radius: 4px;
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        .shape-card {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .shape-card:hover {
+            transform: translateY(-4px);
+        }
+
+        /* Drag & Drop Styles for iPad Touch */
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .basket-highlight {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            transform: scale(1.02);
+        }
+
+        canvas {
+            touch-action: none;
+        }
+
+        @keyframes bounceOnce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-once {
+            animation: bounceOnce 0.6s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <header class="bg-emerald-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('step1')">
+                <div class="bg-white text-emerald-600 p-2 rounded-xl shadow-inner text-xl font-bold">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1 class="font-header text-lg sm:text-2xl font-bold tracking-wide">四邊形王國選士兵</h1>
+                    <p class="text-xs text-emerald-100 hidden sm:block">小四數學：四邊形的關係 (iPad 互動版)</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs for 5 Learning Progression Steps -->
+            <nav class="flex space-x-1 sm:space-x-2 bg-emerald-700/50 p-1 rounded-xl text-xs sm:text-sm font-medium overflow-x-auto">
+                <button onclick="switchTab('step1')" id="nav-step1" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 bg-white text-emerald-800 shadow">
+                    <span>1.閱覽士兵</span>
+                </button>
+                <button onclick="switchTab('step2')" id="nav-step2" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 hover:bg-emerald-500/50">
+                    <span>2.選拔士兵</span>
+                </button>
+                <button onclick="switchTab('step3')" id="nav-step3" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 hover:bg-emerald-500/50">
+                    <span>3.長方形戰隊</span>
+                </button>
+                <button onclick="switchTab('step4')" id="nav-step4" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 hover:bg-emerald-500/50">
+                    <span>4.菱形戰隊</span>
+                </button>
+                <button onclick="switchTab('step5')" id="nav-step5" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 hover:bg-emerald-500/50">
+                    <span>5.正方形將軍</span>
+                </button>
+                <button onclick="switchTab('step6')" id="nav-step6" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 hover:bg-emerald-500/50">
+                    <span>6.特性總結</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- ================= STEP 1: SHAPE GALLERY & ATTRIBUTES ================= -->
+        <section id="page-step1" class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-pen-ruler text-emerald-600"></i> 閱覽士兵與自由標記
+                        </h2>
+                        <p class="text-slate-600 text-sm mt-1">選擇畫筆工具，親自在每個圖形上畫出對邊平行（▶）、等長（||）或直角（∟）標記！有需要可點擊按鈕開估特性數據。</p>
+                    </div>
+
+                    <!-- Interactive Drawing Tools for Step 1 Gallery Cards -->
+                    <div class="flex flex-wrap items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200">
+                        <span class="text-xs font-bold text-slate-500 ml-1">標記畫筆：</span>
+                        <button id="s1-tool-pen" onclick="setStep1Tool('pen')" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center gap-1 transition shadow">
+                            <i class="fa-solid fa-pen"></i> 塗鴉畫筆
+                        </button>
+                        <button id="s1-tool-parallel" onclick="setStep1Tool('parallel')" class="px-3 py-1.5 rounded-lg bg-white border hover:bg-slate-50 text-slate-700 font-bold text-xs transition">
+                            <span>▶ 平行號</span>
+                        </button>
+                        <button id="s1-tool-equal" onclick="setStep1Tool('equal')" class="px-3 py-1.5 rounded-lg bg-white border hover:bg-slate-50 text-slate-700 font-bold text-xs transition">
+                            <span>|| 等長號</span>
+                        </button>
+                        <button id="s1-tool-rightangle" onclick="setStep1Tool('rightangle')" class="px-3 py-1.5 rounded-lg bg-white border hover:bg-slate-50 text-slate-700 font-bold text-xs transition">
+                            <span>∟ 直角號</span>
+                        </button>
+                        <button id="s1-tool-eraser" onclick="setStep1Tool('eraser')" class="px-3 py-1.5 rounded-lg bg-white border hover:bg-slate-50 text-slate-700 font-bold text-xs transition">
+                            <i class="fa-solid fa-eraser"></i> 橡皮擦
+                        </button>
+                        <button onclick="clearStep1Canvases()" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg text-xs transition ml-1">
+                            <i class="fa-solid fa-trash-can"></i> 清除全畫板
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Grid with Embedded Canvas for Step 1 Shapes -->
+                <div id="step1-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+        </section>
+
+        <!-- ================= STEP 2: SOLDIER SELECTION ARENA ================= -->
+        <section id="page-step2" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                <!-- Story Header Banner -->
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-md mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="bg-amber-400 text-slate-900 text-xs font-black px-3 py-0.5 rounded-full uppercase tracking-wider">任務一</span>
+                            <span class="text-emerald-200 text-xs font-semibold">【選拔平行四邊形家族】</span>
+                        </div>
+                        <h2 class="text-2xl font-extrabold flex items-center gap-2">
+                            <i class="fa-solid fa-crown text-amber-300"></i> 王國選拔精銳士兵！
+                        </h2>
+                        <p class="text-emerald-100 text-xs sm:text-sm mt-1">
+                            入伍考核條件：必須擁有 <strong>「兩組對邊分別平行 + 對邊長度相等」</strong>！
+                        </p>
+                    </div>
+                    <button onclick="readStoryStep2()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-4 py-2 rounded-xl shadow transition text-xs shrink-0 flex items-center gap-2">
+                        <i class="fa-solid fa-volume-high"></i> 聽取國王詔書
+                    </button>
+                </div>
+
+                <!-- Arena Layout (Simplified without canvas) -->
+                <div class="max-w-3xl mx-auto bg-slate-50 border border-slate-200 rounded-2xl p-6 flex flex-col gap-6">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-base text-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-users text-emerald-600"></i> 待考核士兵：
+                            </h4>
+                            <button onclick="resetStep2Candidates()" class="text-xs text-slate-500 hover:text-red-500 font-bold transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left"></i> 重置士兵
+                            </button>
+                        </div>
+                        <div id="candidates-container" class="grid grid-cols-2 sm:grid-cols-5 gap-3 min-h-[120px] p-2 bg-slate-100/60 rounded-xl border border-dashed border-slate-300"></div>
+                    </div>
+
+                    <!-- Dropzone Target Basket -->
+                    <div id="basket-step2" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropShape(event, 'step2')" class="bg-emerald-50 border-2 border-dashed border-emerald-400 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[220px] text-center transition relative">
+                        <button onclick="undoStep2Move()" class="absolute top-3 right-3 bg-white hover:bg-slate-100 border border-emerald-300 text-emerald-800 font-bold text-xs px-3 py-1.5 rounded-xl shadow transition flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-rotate-left"></i> 上一步
+                        </button>
+                        <i class="fa-solid fa-shield text-emerald-500 text-3xl mb-2"></i>
+                        <span class="text-sm font-bold text-emerald-800">合格士兵放置處</span>
+                        <p class="text-xs text-emerald-600 mt-1">（點擊或拖拽士兵放入；點擊已入選士兵可退回）</p>
+                        <div id="basket-step2-items" class="flex flex-wrap gap-3 mt-4 justify-center items-center min-h-[100px] w-full"></div>
+                    </div>
+
+                    <button onclick="checkStep2Result()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition text-base flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check text-lg"></i> 完成選拔並驗證
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STEP 3: RECTANGLE SQUAD RECRUITMENT ================= -->
+        <section id="page-step3" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                <!-- Squad Header Banner -->
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-md mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="bg-amber-400 text-slate-900 text-xs font-black px-3 py-0.5 rounded-full uppercase tracking-wider">戰隊招募 1</span>
+                            <span class="text-emerald-200 text-xs font-semibold">【平行四邊形家族精銳分支】</span>
+                        </div>
+                        <h2 class="text-2xl font-extrabold flex items-center gap-2">
+                            <i class="fa-solid fa-shield-cat text-amber-300"></i> 組建「長方形戰隊」！
+                        </h2>
+                        <p class="text-emerald-100 text-xs sm:text-sm mt-1">
+                            戰隊考核條件：必需擁有 <strong>「對邊長度相等 + 4個直角」</strong>！符合條件即可成功入隊成為隊員！
+                        </p>
+                    </div>
+                    <button onclick="readSquadAudio('rect')" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-4 py-2 rounded-xl shadow transition text-xs shrink-0 flex items-center gap-2">
+                        <i class="fa-solid fa-volume-high"></i> 聽取戰隊招募令
+                    </button>
+                </div>
+
+                <!-- Squad Recruitment Interactive Playground -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Candidate Soldiers Reserve -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-sm text-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-users text-emerald-600"></i> 待考核士兵：
+                            </h4>
+                            <button onclick="resetVenn('step3')" class="text-xs text-slate-500 hover:text-red-500 font-bold transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left"></i> 重置士兵
+                            </button>
+                        </div>
+                        <div id="step3-candidates" class="grid grid-cols-2 gap-3 min-h-[160px] p-2 bg-slate-100/60 rounded-xl border border-dashed border-slate-300"></div>
+                    </div>
+
+                    <!-- Squad Base / Recruitment Circle -->
+                    <div class="lg:col-span-2 bg-gradient-to-b from-emerald-50/50 to-teal-50/30 border-2 border-emerald-200 rounded-2xl p-6 relative flex flex-col items-center justify-center min-h-[380px]">
+                        <div class="absolute top-3 left-4 bg-emerald-700 text-white font-bold text-xs px-3 py-1 rounded-full shadow">
+                            🛡️ 長方形戰隊大本營
+                        </div>
+                        <button onclick="undoVennMove('step3')" class="absolute top-3 right-4 bg-white hover:bg-slate-100 border border-emerald-300 text-emerald-800 font-bold text-xs px-3 py-1 rounded-xl shadow transition flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-rotate-left"></i> 上一步 (退回)
+                        </button>
+                        
+                        <!-- Parallelogram Outer Family Scope -->
+                        <div class="w-full max-w-lg border-2 border-dashed border-emerald-400 bg-white/70 rounded-3xl p-6 flex flex-col items-center justify-center min-h-[280px] mt-4 shadow-sm">
+                            <div id="venn-box-step3" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropVennShape(event, 'step3')" class="w-72 h-72 sm:w-80 sm:h-80 bg-emerald-100/50 border-4 border-dashed border-emerald-500 rounded-full p-4 flex flex-col items-center justify-center gap-2 transition shadow-inner text-center relative">
+                                <span class="text-xs text-emerald-900 font-black bg-emerald-200 border border-emerald-400 px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
+                                    <i class="fa-solid fa-check-double text-emerald-700"></i> 長方形戰隊隊員框
+                                </span>
+                                <p class="text-[11px] text-emerald-800 font-bold mt-1">（特徵：4個直角 + 對邊長度相等）</p>
+                                <div id="venn-step3-items" class="flex flex-wrap gap-2 justify-center items-center mt-2 min-h-[120px] w-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Secret Discovery Box (Locked by default) -->
+                <div id="secret-box-step3" class="mt-6 bg-slate-100 border border-slate-300 rounded-2xl p-4 text-slate-500 text-sm leading-relaxed transition-all duration-500">
+                    <h4 id="secret-title-step3" class="font-bold mb-1 flex items-center gap-2 text-slate-600">
+                        <i class="fa-solid fa-lock text-slate-400 text-base"></i> 戰隊秘密發現（待解鎖）：
+                    </h4>
+                    <p id="secret-text-step3" class="text-xs sm:text-sm">
+                        請把所有符合長方形條件的士兵拖入或點擊放入戰隊隊員框，即可解鎖戰隊隱藏秘密！
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STEP 4: RHOMBUS SQUAD RECRUITMENT ================= -->
+        <section id="page-step4" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                <!-- Squad Header Banner -->
+                <div class="bg-gradient-to-r from-purple-600 to-indigo-700 text-white p-5 rounded-2xl shadow-md mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="bg-amber-400 text-slate-900 text-xs font-black px-3 py-0.5 rounded-full uppercase tracking-wider">戰隊招募 2</span>
+                            <span class="text-purple-200 text-xs font-semibold">【平行四邊形家族精銳分支】</span>
+                        </div>
+                        <h2 class="text-2xl font-extrabold flex items-center gap-2">
+                            <i class="fa-solid fa-gem text-amber-300"></i> 組建「菱形戰隊」！
+                        </h2>
+                        <p class="text-purple-100 text-xs sm:text-sm mt-1">
+                            戰隊考核條件：必需擁有 <strong>「四邊長度相等 + 對邊平行」</strong>！符合條件即可成功入隊成為隊員！
+                        </p>
+                    </div>
+                    <button onclick="readSquadAudio('rhombus')" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-4 py-2 rounded-xl shadow transition text-xs shrink-0 flex items-center gap-2">
+                        <i class="fa-solid fa-volume-high"></i> 聽取戰隊招募令
+                    </button>
+                </div>
+
+                <!-- Squad Recruitment Interactive Playground -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Candidate Soldiers Reserve -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-sm text-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-users text-purple-600"></i> 待考核士兵：
+                            </h4>
+                            <button onclick="resetVenn('step4')" class="text-xs text-slate-500 hover:text-red-500 font-bold transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left"></i> 重置士兵
+                            </button>
+                        </div>
+                        <div id="step4-candidates" class="grid grid-cols-2 gap-3 min-h-[160px] p-2 bg-slate-100/60 rounded-xl border border-dashed border-slate-300"></div>
+                    </div>
+
+                    <!-- Squad Base / Recruitment Circle -->
+                    <div class="lg:col-span-2 bg-gradient-to-b from-purple-50/50 to-indigo-50/30 border-2 border-purple-200 rounded-2xl p-6 relative flex flex-col items-center justify-center min-h-[380px]">
+                        <div class="absolute top-3 left-4 bg-purple-700 text-white font-bold text-xs px-3 py-1 rounded-full shadow">
+                            💎 菱形戰隊大本營
+                        </div>
+                        <button onclick="undoVennMove('step4')" class="absolute top-3 right-4 bg-white hover:bg-slate-100 border border-purple-300 text-purple-800 font-bold text-xs px-3 py-1 rounded-xl shadow transition flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-rotate-left"></i> 上一步 (退回)
+                        </button>
+                        
+                        <!-- Parallelogram Outer Family Scope -->
+                        <div class="w-full max-w-lg border-2 border-dashed border-purple-400 bg-white/70 rounded-3xl p-6 flex flex-col items-center justify-center min-h-[280px] mt-4 shadow-sm">
+                            <div id="venn-box-step4" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropVennShape(event, 'step4')" class="w-72 h-72 sm:w-80 sm:h-80 bg-purple-100/50 border-4 border-dashed border-purple-500 rounded-full p-4 flex flex-col items-center justify-center gap-2 transition shadow-inner text-center relative">
+                                <span class="text-xs text-purple-900 font-black bg-purple-200 border border-purple-400 px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
+                                    <i class="fa-solid fa-check-double text-purple-700"></i> 菱形戰隊隊員框
+                                </span>
+                                <p class="text-[11px] text-purple-800 font-bold mt-1">（特徵：4條邊全部等長 + 對邊平行）</p>
+                                <div id="venn-step4-items" class="flex flex-wrap gap-2 justify-center items-center mt-2 min-h-[120px] w-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Secret Discovery Box (Locked by default) -->
+                <div id="secret-box-step4" class="mt-6 bg-slate-100 border border-slate-300 rounded-2xl p-4 text-slate-500 text-sm leading-relaxed transition-all duration-500">
+                    <h4 id="secret-title-step4" class="font-bold mb-1 flex items-center gap-2 text-slate-600">
+                        <i class="fa-solid fa-lock text-slate-400 text-base"></i> 戰隊秘密發現（待解鎖）：
+                    </h4>
+                    <p id="secret-text-step4" class="text-xs sm:text-sm">
+                        請把所有符合菱形條件的士兵拖入或點擊放入戰隊隊員框，即可解鎖戰隊隱藏秘密！
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STEP 5: SQUARE GENERAL SPECIAL FOCUS ================= -->
+        <section id="page-step5" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                <!-- Square Header Banner -->
+                <div class="bg-gradient-to-r from-amber-500 to-yellow-600 text-white p-5 rounded-2xl shadow-md mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="bg-white text-amber-800 text-xs font-black px-3 py-0.5 rounded-full uppercase tracking-wider">最高統帥</span>
+                            <span class="text-amber-100 text-xs font-semibold">【全能王牌士兵】</span>
+                        </div>
+                        <h2 class="text-2xl font-extrabold flex items-center gap-2">
+                            <i class="fa-solid fa-star text-yellow-200"></i> 正方形將軍的雙重身份
+                        </h2>
+                        <p class="text-amber-50 text-xs sm:text-sm mt-1">
+                            正方形既是完美的<strong>長方形</strong>，也是完美的<strong>菱形</strong>！了解正方形的全能特性。
+                        </p>
+                    </div>
+                    <button onclick="readSquareAudio()" class="bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-4 py-2 rounded-xl shadow transition text-xs shrink-0 flex items-center gap-2">
+                        <i class="fa-solid fa-volume-high"></i> 聆聽將軍宣示
+                    </button>
+                </div>
+
+                <!-- Interactive Dual Identity Showcase -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Identity 1: Square as Rectangle -->
+                    <div class="bg-emerald-50/60 border-2 border-emerald-300 rounded-2xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">身份一</span>
+                                <h3 class="font-bold text-lg text-emerald-900">我是「長方形」成員！</h3>
+                            </div>
+                            <p class="text-xs text-emerald-800 mb-4 leading-relaxed">
+                                長方形的要求是：<strong>4 個直角 + 對邊長度相等</strong>。<br>
+                                正方形有 4 個直角，而且 4 條邊都相等（自然對邊也相等），因此正方形絕對是長方形！
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 border border-emerald-200 flex justify-center items-center">
+                            <svg width="120" height="90" viewBox="0 0 120 90">
+                                <rect x="25" y="10" width="70" height="70" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/>
+                                <path d="M25,20 L35,20 L35,10" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                <path d="M95,20 L85,20 L85,10" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                <path d="M25,70 L35,70 L35,80" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                <path d="M95,70 L85,70 L85,80" fill="none" stroke="#ef4444" stroke-width="2"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Identity 2: Square as Rhombus -->
+                    <div class="bg-purple-50/60 border-2 border-purple-300 rounded-2xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="bg-purple-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">身份二</span>
+                                <h3 class="font-bold text-lg text-purple-900">我是「菱形」成員！</h3>
+                            </div>
+                            <p class="text-xs text-purple-800 mb-4 leading-relaxed">
+                                菱形的要求是：<strong>4 條邊長度全部相等 + 對邊平行</strong>。<br>
+                                正方形的 4 條邊完全相等，而且兩組對邊互相平行，因此正方形也是完美的菱形！
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 border border-purple-200 flex justify-center items-center">
+                            <svg width="120" height="90" viewBox="0 0 120 90">
+                                <rect x="25" y="10" width="70" height="70" fill="#fae8ff" stroke="#a855f7" stroke-width="3"/>
+                                <text x="55" y="8" fill="#a855f7" font-size="10" font-weight="bold" text-anchor="middle">||</text>
+                                <text x="55" y="88" fill="#a855f7" font-size="10" font-weight="bold" text-anchor="middle">||</text>
+                                <text x="18" y="50" fill="#a855f7" font-size="10" font-weight="bold" text-anchor="middle">||</text>
+                                <text x="102" y="50" fill="#a855f7" font-size="10" font-weight="bold" text-anchor="middle">||</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Property Checker for Square -->
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mt-6">
+                    <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-amber-500"></i> 點擊勾選，驗證正方形符合的所有稱呼：
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <label class="flex items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 transition">
+                            <input type="checkbox" onchange="checkSquareTitles()" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-400 sq-title-check">
+                            <span class="text-xs font-bold text-slate-700">四邊形</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 transition">
+                            <input type="checkbox" onchange="checkSquareTitles()" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-400 sq-title-check">
+                            <span class="text-xs font-bold text-slate-700">平行四邊形</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 transition">
+                            <input type="checkbox" onchange="checkSquareTitles()" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-400 sq-title-check">
+                            <span class="text-xs font-bold text-slate-700">長方形</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 transition">
+                            <input type="checkbox" onchange="checkSquareTitles()" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-400 sq-title-check">
+                            <span class="text-xs font-bold text-slate-700">菱形</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 transition">
+                            <input type="checkbox" onchange="checkSquareTitles()" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-400 sq-title-check">
+                            <span class="text-xs font-bold text-slate-700">正方形</span>
+                        </label>
+                    </div>
+                    <div id="square-check-feedback" class="mt-4 p-3 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STEP 6: SUMMARY & QUIZ ================= -->
+        <section id="page-step6" class="hidden space-y-6">
+            <!-- Full Venn Graphic Interactive Summary -->
+            <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-diagram-project text-emerald-600"></i> 四邊形王國關係總結（溫氏圖）
+                </h2>
+                <p class="text-slate-600 text-sm mb-4">清楚呈現梯形、平行四邊形、長方形、菱形與正方形的包含關係：</p>
+
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 min-h-[300px] flex items-center justify-center">
+                    <svg width="100%" height="320" viewBox="0 0 600 320" class="max-w-xl mx-auto">
+                        <rect x="10" y="10" width="580" height="300" rx="20" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,6"/>
+                        <text x="30" y="35" fill="#475569" font-weight="bold" font-size="14">四邊形王國整體家族</text>
+
+                        <!-- Trapezoid (Separate) -->
+                        <ellipse cx="110" cy="170" rx="75" ry="100" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="110" y="105" text-anchor="middle" fill="#b45309" font-weight="bold" font-size="14">梯形</text>
+                        <text x="110" y="170" text-anchor="middle" fill="#b45309" font-size="11">（只有1組對邊平行）</text>
+
+                        <!-- Parallelogram Outer Circle -->
+                        <ellipse cx="380" cy="170" rx="170" ry="110" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+                        <text x="380" y="85" text-anchor="middle" fill="#0369a1" font-weight="bold" font-size="15">平行四邊形家族</text>
+
+                        <!-- Rectangle Circle -->
+                        <ellipse cx="330" cy="180" rx="85" ry="65" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                        <text x="300" y="145" fill="#15803d" font-weight="bold" font-size="13">長方形</text>
+
+                        <!-- Rhombus Circle -->
+                        <ellipse cx="430" cy="180" rx="85" ry="65" fill="#fae8ff" stroke="#c084fc" stroke-width="2"/>
+                        <text x="450" y="145" fill="#6b21a8" font-weight="bold" font-size="13">菱形</text>
+
+                        <!-- Square Circle (Intersection) -->
+                        <circle cx="380" cy="180" r="32" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>
+                        <text x="380" y="185" text-anchor="middle" fill="#854d0e" font-weight="extrabold" font-size="13">正方形</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Quiz Test Card -->
+            <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-award text-amber-500"></i> 終極小考驗
+                    </h3>
+                    <span id="quiz-progress" class="text-xs font-bold text-slate-500">問題 1 / 4</span>
+                </div>
+
+                <h4 id="quiz-question" class="text-base sm:text-lg font-bold text-slate-800 mb-4">載入中...</h4>
+                <div id="quiz-options" class="space-y-3"></div>
+                <div id="quiz-feedback" class="mt-4 p-3 rounded-xl hidden font-bold text-xs sm:text-sm"></div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <button onclick="resetQuiz()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl">重新考驗</button>
+                    <button id="btn-next-quiz" onclick="nextQuizQuestion()" class="px-5 py-2 bg-emerald-600 text-white font-bold text-xs sm:text-sm rounded-xl hidden">下一題 <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Global Toast Message -->
+    <div id="toast-message" class="fixed bottom-6 right-6 z-50 bg-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 opacity-0 translate-y-10 pointer-events-none flex items-center space-x-3">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-amber-400 text-lg"></i>
+        <span id="toast-text" class="text-sm font-medium">提示訊息</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-100 border-t border-slate-200 py-3 mt-6 text-center text-xs text-slate-500">
+        四邊形王國選士兵 &copy; 小學四年級數學：四邊形關係互動 APP (iPad Optimized)
+    </footer>
+
+    <script>
+        /* ================= STATE MANAGEMENT ================= */
+        const state = {
+            currentTab: 'step1',
+            activeTool: 'pen', 
+            penColor: '#ef4444',
+            isDrawing: false,
+            lastX: 0,
+            lastY: 0,
+            quizIndex: 0,
+            quizScore: 0,
+            step1Marks: {
+                sq: { revealed: false },
+                rect: { revealed: false },
+                rhombus: { revealed: false },
+                para: { revealed: false },
+                trap: { revealed: false }
+            },
+            step1Tool: 'pen',
+            step1Canvases: {},
+            // Track history movement for Step 2, Step 3 & Step 4
+            historyVenn: {
+                step2: [],
+                step3: [],
+                step4: []
+            }
+        };
+
+        /* ================= SHAPE DATA ================= */
+        const SHAPES_DATA = [
+            { id: 'sq', name: '正方形', parallelPairs: 2, equalSides: 4, rightAngles: 4, desc: '4條邊長度相等，4個直角' },
+            { id: 'rect', name: '長方形', parallelPairs: 2, equalSides: 2, rightAngles: 4, desc: '對邊長度相等，4個直角' },
+            { id: 'rhombus', name: '菱形', parallelPairs: 2, equalSides: 4, rightAngles: 0, desc: '4條邊長度相等，對邊平行' },
+            { id: 'para', name: '平行四邊形', parallelPairs: 2, equalSides: 2, rightAngles: 0, desc: '對邊長度相等，對邊平行' },
+            { id: 'trap', name: '梯形', parallelPairs: 1, equalSides: 0, rightAngles: 0, desc: '只有一組對邊平行' }
+        ];
+
+        /* ================= BASE SHAPE PATH DRAWING ON CANVAS ================= */
+        function drawBaseShapeOnCanvas(ctx, id, width, height) {
+            ctx.save();
+            ctx.strokeStyle = "#16a34a";
+            ctx.fillStyle = "#dcfce7";
+            ctx.lineWidth = 3;
+            ctx.lineJoin = "round";
+
+            ctx.beginPath();
+            if (id === 'sq') {
+                ctx.rect(width * 0.25, height * 0.15, height * 0.7, height * 0.7);
+            } else if (id === 'rect') {
+                ctx.rect(width * 0.1, height * 0.2, width * 0.8, height * 0.6);
+            } else if (id === 'rhombus') {
+                ctx.moveTo(width * 0.5, height * 0.1);
+                ctx.lineTo(width * 0.85, height * 0.5);
+                ctx.lineTo(width * 0.5, height * 0.9);
+                ctx.lineTo(width * 0.15, height * 0.5);
+                ctx.closePath();
+            } else if (id === 'para') {
+                ctx.moveTo(width * 0.25, height * 0.2);
+                ctx.lineTo(width * 0.9, height * 0.2);
+                ctx.lineTo(width * 0.75, height * 0.8);
+                ctx.lineTo(width * 0.1, height * 0.8);
+                ctx.closePath();
+            } else if (id === 'trap') {
+                ctx.moveTo(width * 0.3, height * 0.2);
+                ctx.lineTo(width * 0.75, height * 0.2);
+                ctx.lineTo(width * 0.95, height * 0.8);
+                ctx.lineTo(width * 0.05, height * 0.8);
+                ctx.closePath();
+            }
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function renderStep1Cards() {
+            const container = document.getElementById('step1-grid');
+            if (!container) return;
+
+            container.innerHTML = SHAPES_DATA.map(s => {
+                const marks = state.step1Marks[s.id];
+                return `
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shape-card flex flex-col justify-between card-shadow">
+                    <div>
+                        <!-- Embedded Interactive Drawing Canvas for Each Shape -->
+                        <div class="h-44 bg-slate-50 rounded-xl mb-3 border border-slate-200 relative overflow-hidden flex items-center justify-center">
+                            <canvas id="step1-canvas-${s.id}" class="w-full h-full cursor-crosshair block touch-none"></canvas>
+                        </div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="font-bold text-slate-800 text-lg">${s.name}</h3>
+                            <button onclick="clearSingleStep1Canvas('${s.id}')" class="text-xs text-slate-400 hover:text-red-500 transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left"></i> 重繪此圖
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reveal Feature Property Summary (Hidden by default, reveal on click) -->
+                    <div class="mt-2 pt-2 border-t border-slate-100">
+                        ${marks.revealed ? `
+                            <div class="bg-emerald-50 rounded-xl p-3 text-xs space-y-1 text-emerald-900 border border-emerald-100 font-semibold animate-fadeIn">
+                                <p class="text-sm font-bold text-emerald-800 leading-relaxed text-center py-1">${s.desc}</p>
+                            </div>
+                            <button onclick="toggleStep1Reveal('${s.id}')" class="w-full mt-2 text-center text-xs text-slate-400 underline">隱藏特性數據</button>
+                        ` : `
+                            <button onclick="toggleStep1Reveal('${s.id}')" class="w-full py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-eye"></i> 揭曉特性數據
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            // Initialize Canvases for Step 1
+            setTimeout(initStep1Canvases, 50);
+        }
+
+        /* ================= STEP 1 DRAWING CANVAS HANDLERS ================= */
+        function setStep1Tool(tool) {
+            state.step1Tool = tool;
+            ['pen', 'parallel', 'equal', 'rightangle', 'eraser'].forEach(t => {
+                const btn = document.getElementById(`s1-tool-${t}`);
+                if (btn) {
+                    if (t === tool) {
+                        btn.className = "px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center gap-1 transition shadow";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg bg-white border hover:bg-slate-50 text-slate-700 font-bold text-xs transition";
+                    }
+                }
+            });
+        }
+
+        function initStep1Canvases() {
+            SHAPES_DATA.forEach(s => {
+                const c = document.getElementById(`step1-canvas-${s.id}`);
+                if (!c) return;
+                
+                // Adjust size based on container layout
+                const rect = c.parentElement.getBoundingClientRect();
+                c.width = rect.width || 280;
+                c.height = rect.height || 176;
+
+                const ctx = c.getContext('2d');
+                state.step1Canvases[s.id] = { canvas: c, ctx: ctx, drawing: false, lastX: 0, lastY: 0 };
+
+                // Draw base background shape
+                drawBaseShapeOnCanvas(ctx, s.id, c.width, c.height);
+
+                // Event Listeners for Touch/Mouse
+                const startFunc = (e) => startStep1Draw(e, s.id);
+                const moveFunc = (e) => drawStep1(e, s.id);
+                const endFunc = () => stopStep1Draw(s.id);
+
+                c.onmousedown = startFunc;
+                c.onmousemove = moveFunc;
+                c.onmouseup = endFunc;
+                c.onmouseleave = endFunc;
+
+                c.ontouchstart = (e) => { if (e.touches.length === 1) startFunc(e.touches[0]); };
+                c.ontouchmove = (e) => { if (e.touches.length === 1) moveFunc(e.touches[0]); };
+                c.ontouchend = endFunc;
+            });
+        }
+
+        function getStep1Pos(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+
+        function startStep1Draw(e, shapeId) {
+            const item = state.step1Canvases[shapeId];
+            if (!item) return;
+            const p = getStep1Pos(e, item.canvas);
+
+            item.drawing = true;
+            item.lastX = p.x;
+            item.lastY = p.y;
+
+            if (['parallel', 'equal', 'rightangle'].includes(state.step1Tool)) {
+                drawStep1Symbol(item.ctx, p.x, p.y, state.step1Tool);
+                item.drawing = false;
+            }
+        }
+
+        function drawStep1(e, shapeId) {
+            const item = state.step1Canvases[shapeId];
+            if (!item || !item.drawing) return;
+            const p = getStep1Pos(e, item.canvas);
+            const ctx = item.ctx;
+
+            ctx.beginPath();
+            ctx.moveTo(item.lastX, item.lastY);
+            ctx.lineTo(p.x, p.y);
+
+            if (state.step1Tool === 'pen') {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = '#ef4444'; // Red pen
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            } else if (state.step1Tool === 'eraser') {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = '#f8fafc'; 
+                ctx.lineWidth = 14;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+
+            item.lastX = p.x;
+            item.lastY = p.y;
+        }
+
+        function stopStep1Draw(shapeId) {
+            if (state.step1Canvases[shapeId]) {
+                state.step1Canvases[shapeId].drawing = false;
+            }
+        }
+
+        function drawStep1Symbol(ctx, x, y, type) {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.font = 'bold 16px sans-serif';
+            if (type === 'parallel') {
+                ctx.fillStyle = '#2563eb';
+                ctx.fillText('▶', x - 6, y + 6);
+            } else if (type === 'equal') {
+                ctx.fillStyle = '#059669';
+                ctx.fillText('||', x - 6, y + 6);
+            } else if (type === 'rightangle') {
+                ctx.fillStyle = '#dc2626';
+                ctx.fillText('∟', x - 6, y + 6);
+            }
+        }
+
+        function clearSingleStep1Canvas(shapeId) {
+            const item = state.step1Canvases[shapeId];
+            if (item) {
+                item.ctx.clearRect(0, 0, item.canvas.width, item.canvas.height);
+                drawBaseShapeOnCanvas(item.ctx, shapeId, item.canvas.width, item.canvas.height);
+            }
+        }
+
+        function clearStep1Canvases() {
+            SHAPES_DATA.forEach(s => clearSingleStep1Canvas(s.id));
+            showToast("已重置所有圖形標記畫板", "fa-trash-can");
+        }
+
+        function toggleStep1Reveal(shapeId) {
+            state.step1Marks[shapeId].revealed = !state.step1Marks[shapeId].revealed;
+            renderStep1Cards();
+        }
+
+        function initStep2Candidates() {
+            const container = document.getElementById('candidates-container');
+            const basketItems = document.getElementById('basket-step2-items');
+            if (!container) return;
+
+            state.historyVenn.step2 = []; // Clear history on re-render
+            basketItems.innerHTML = ''; // Clear basket
+
+            const candidates = ['sq', 'rect', 'rhombus', 'para', 'trap'];
+            container.innerHTML = candidates.map(id => {
+                const shape = SHAPES_DATA.find(s => s.id === id);
+                return `
+                    <div id="cand-step2-${id}" draggable="true" ondragstart="dragStart(event, '${id}', 'step2')"
+                        onclick="toggleStep2Candidate('${id}')"
+                        class="bg-white border-2 border-slate-200 hover:border-emerald-500 rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer shadow-sm transition hover:scale-105">
+                        ${getShapeSVG(id, 80, 55, true)}
+                        <span class="text-xs font-bold text-slate-700 mt-1">${shape.name}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* Toggle Step 2 candidate shape between pool and basket */
+        function toggleStep2Candidate(shapeId) {
+            const card = document.getElementById(`cand-step2-${shapeId}`);
+            const candidatePool = document.getElementById('candidates-container');
+            const basketContainer = document.getElementById('basket-step2-items');
+
+            if (!card || !candidatePool || !basketContainer) return;
+
+            if (card.parentElement.id === 'candidates-container') {
+                basketContainer.appendChild(card);
+                state.historyVenn.step2.push({ shapeId, from: 'candidates-container', to: 'basket-step2-items' });
+                showToast(`已放入 ${SHAPES_DATA.find(s=>s.id===shapeId).name}`, "fa-hand-pointer");
+            } else {
+                candidatePool.appendChild(card);
+                state.historyVenn.step2.push({ shapeId, from: 'basket-step2-items', to: 'candidates-container' });
+                showToast(`已退回 ${SHAPES_DATA.find(s=>s.id===shapeId).name}`, "fa-arrow-rotate-left");
+            }
+        }
+
+        /* Undo previous action in Step 2 */
+        function undoStep2Move() {
+            const history = state.historyVenn.step2;
+            if (!history || history.length === 0) {
+                showToast("目前沒有可復原的操作", "fa-circle-info");
+                return;
+            }
+
+            const lastAction = history.pop();
+            const card = document.getElementById(`cand-step2-${lastAction.shapeId}`);
+            const targetContainer = document.getElementById(lastAction.from);
+
+            if (card && targetContainer) {
+                targetContainer.appendChild(card);
+                showToast(`已撤銷操作，退回 ${SHAPES_DATA.find(s=>s.id===lastAction.shapeId).name}`, "fa-arrow-rotate-left");
+            }
+        }
+
+        /* Reset all candidates in Step 2 */
+        function resetStep2Candidates() {
+            initStep2Candidates();
+            showToast("已重置選拔士兵列表", "fa-rotate-left");
+        }
+
+        function renderVennStepCandidates(stepId, list) {
+            const container = document.getElementById(`${stepId}-candidates`);
+            if (!container) return;
+
+            state.historyVenn[stepId] = []; // Clear history on re-render
+
+            container.innerHTML = list.map((id, idx) => {
+                const shape = SHAPES_DATA.find(s => s.id === id);
+                return `
+                    <div id="vcard-${stepId}-${id}" draggable="true" ondragstart="dragStart(event, '${id}', '${stepId}')"
+                        onclick="toggleVennCard('${id}', '${stepId}')"
+                        class="bg-white border-2 border-slate-200 hover:border-emerald-500 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition hover:scale-105">
+                        ${getShapeSVG(id, 65, 45, true)}
+                        <span class="text-xs font-bold text-slate-700 mt-1">${shape.name}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Reset Venn container and locked secrets box
+            document.getElementById(`venn-${stepId}-items`).innerHTML = '';
+            resetSecretBox(stepId);
+        }
+
+        /* Toggle candidate shape between candidate pool and Venn box */
+        function toggleVennCard(shapeId, stepId) {
+            const card = document.getElementById(`vcard-${stepId}-${shapeId}`);
+            const candidatePool = document.getElementById(`${stepId}-candidates`);
+            const targetBox = document.getElementById(`venn-${stepId}-items`);
+
+            if (!card || !candidatePool || !targetBox) return;
+
+            if (card.parentElement.id === `${stepId}-candidates`) {
+                targetBox.appendChild(card);
+                state.historyVenn[stepId].push({ shapeId, from: `${stepId}-candidates`, to: `venn-${stepId}-items` });
+                showToast(`已放入 ${SHAPES_DATA.find(s=>s.id===shapeId).name}`, "fa-diagram-project");
+            } else {
+                candidatePool.appendChild(card);
+                state.historyVenn[stepId].push({ shapeId, from: `venn-${stepId}-items`, to: `${stepId}-candidates` });
+                showToast(`已退回 ${SHAPES_DATA.find(s=>s.id===shapeId).name}`, "fa-arrow-rotate-left");
+            }
+
+            checkVennCompletion(stepId);
+        }
+
+        /* Undo previous action */
+        function undoVennMove(stepId) {
+            const history = state.historyVenn[stepId];
+            if (!history || history.length === 0) {
+                showToast("目前沒有可復原的操作", "fa-circle-info");
+                return;
+            }
+
+            const lastAction = history.pop();
+            const card = document.getElementById(`vcard-${stepId}-${lastAction.shapeId}`);
+            const targetContainer = document.getElementById(lastAction.from);
+
+            if (card && targetContainer) {
+                targetContainer.appendChild(card);
+                showToast(`已撤銷操作，退回 ${SHAPES_DATA.find(s=>s.id===lastAction.shapeId).name}`, "fa-arrow-rotate-left");
+            }
+
+            checkVennCompletion(stepId);
+        }
+
+        /* Reset all candidates for Step 3/4 */
+        function resetVenn(stepId) {
+            const qualifiedCandidates = ['sq', 'rect', 'rhombus', 'para'];
+            renderVennStepCandidates(stepId, qualifiedCandidates);
+            showToast("已重置該頁面的士兵選拔", "fa-rotate-left");
+        }
+
+        /* Verify correct answers & unlock the secret box dynamically */
+        function checkVennCompletion(stepId) {
+            const vennItems = document.getElementById(`venn-${stepId}-items`).children;
+            const placedIds = Array.from(vennItems).map(el => el.id.replace(`vcard-${stepId}-`, ''));
+
+            let isCorrect = false;
+
+            if (stepId === 'step3') {
+                // Rectangle squad: Rect and Square (both sq and rect)
+                const hasSquare = placedIds.includes('sq');
+                const hasRect = placedIds.includes('rect');
+                const hasOthers = placedIds.includes('rhombus') || placedIds.includes('para');
+
+                if (hasSquare && hasRect && !hasOthers) {
+                    isCorrect = true;
+                }
+            } else if (stepId === 'step4') {
+                // Rhombus squad: Rhombus and Square (both sq and rhombus)
+                const hasSquare = placedIds.includes('sq');
+                const hasRhombus = placedIds.includes('rhombus');
+                const hasOthers = placedIds.includes('rect') || placedIds.includes('para');
+
+                if (hasSquare && hasRhombus && !hasOthers) {
+                    isCorrect = true;
+                }
+            }
+
+            if (isCorrect) {
+                unlockSecretBox(stepId);
+            } else {
+                resetSecretBox(stepId);
+            }
+        }
+
+        function unlockSecretBox(stepId) {
+            const box = document.getElementById(`secret-box-${stepId}`);
+            const title = document.getElementById(`secret-title-${stepId}`);
+            const text = document.getElementById(`secret-text-${stepId}`);
+
+            if (stepId === 'step3') {
+                box.className = "mt-6 bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 text-emerald-950 text-sm leading-relaxed shadow-md animate-bounce-once";
+                title.className = "font-bold mb-1 flex items-center gap-2 text-emerald-800 text-base";
+                title.innerHTML = `<i class="fa-solid fa-award text-amber-500 text-lg"></i> 恭喜！成功組建戰隊——【秘密發現】解鎖：`;
+                text.innerHTML = `正方形不僅 4 條邊都相等，而且擁有 <strong>4 個直角</strong>！完全符合長方形「對邊相等 + 4 個直角」的要求，因此 <strong>正方形也是「長方形戰隊」的超級特種隊員</strong>！`;
+            } else if (stepId === 'step4') {
+                box.className = "mt-6 bg-purple-50 border-2 border-purple-300 rounded-2xl p-4 text-purple-950 text-sm leading-relaxed shadow-md animate-bounce-once";
+                title.className = "font-bold mb-1 flex items-center gap-2 text-purple-800 text-base";
+                title.innerHTML = `<i class="fa-solid fa-award text-amber-500 text-lg"></i> 恭喜！成功組建戰隊——【秘密發現】解鎖：`;
+                text.innerHTML = `正方形 4 條邊全部相等，而且兩組對邊互相平行！完美符合菱形戰隊的要求，因此 <strong>正方形同時也是「菱形戰隊」的精銳隊員</strong>！`;
+            }
+
+            confetti({ particleCount: 70, spread: 60 });
+        }
+
+        function resetSecretBox(stepId) {
+            const box = document.getElementById(`secret-box-${stepId}`);
+            const title = document.getElementById(`secret-title-${stepId}`);
+            const text = document.getElementById(`secret-text-${stepId}`);
+
+            if (!box || !title || !text) return;
+
+            box.className = "mt-6 bg-slate-100 border border-slate-300 rounded-2xl p-4 text-slate-500 text-sm leading-relaxed";
+            title.className = "font-bold mb-1 flex items-center gap-2 text-slate-600";
+            title.innerHTML = `<i class="fa-solid fa-lock text-slate-400 text-base"></i> 戰隊秘密發現（待解鎖）：`;
+            text.innerHTML = `請把所有符合要求的士兵放入戰隊隊員框，即可解鎖戰隊隱藏秘密！`;
+        }
+
+        function dragStart(e, shapeId, stepId) {
+            e.dataTransfer.setData('text/plain', JSON.stringify({ shapeId, stepId }));
+        }
+
+        function dropVennShape(e, stepId) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('basket-highlight');
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            toggleVennCard(data.shapeId, stepId);
+        }
+
+        /* SVG Generator for steps 2-4 */
+        function getShapeSVG(type, w = 110, h = 80, showMarks = false) {
+            let path = '';
+            if (type === 'sq') path = "M25,15 L75,15 L75,65 L25,65 Z";
+            else if (type === 'rect') path = "M10,20 L100,20 L100,60 L10,60 Z";
+            else if (type === 'rhombus') path = "M55,10 L90,40 L55,70 L20,40 Z";
+            else if (type === 'para') path = "M25,20 L95,20 L80,60 L10,60 Z";
+            else if (type === 'trap') path = "M30,20 L75,20 L100,60 L10,60 Z";
+
+            return `
+                <svg width="${w}" height="${h}" viewBox="0 0 110 80" class="drop-shadow-sm select-none">
+                    <polygon points="${path.replace(/[MLZ]/g, '')}" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+
+        function clickSelectStep2(id, idx) {
+            const el = document.getElementById(`cand-step2-${idx}`);
+            if (!el) return;
+            document.getElementById('basket-step2-items').appendChild(el);
+            showToast(`已把 ${SHAPES_DATA.find(s=>s.id===id).name} 放入合格空格`, "fa-hand-pointer");
+        }
+
+        function checkStep2Result() {
+            const basket = document.getElementById('basket-step2-items').children;
+            let correct = true;
+            let count = 0;
+
+            for (let item of basket) {
+                const id = item.getAttribute('onclick').match(/'([^']+)'/)[1];
+                const s = SHAPES_DATA.find(x => x.id === id);
+                if (s.parallelPairs === 2 && s.equalSides >= 2) {
+                    count++;
+                } else {
+                    correct = false;
+                }
+            }
+
+            if (correct && count === 4) {
+                confetti({ particleCount: 80, spread: 60 });
+                showToast("恭喜！成功選拔出所有合格士兵！", "fa-circle-check");
+            } else {
+                showToast("選拔結果有誤，提示：梯形只有1組對邊平行哦！", "fa-circle-exclamation");
+            }
+        }
+
+        let canvas, ctx;
+
+        function initCanvas() {
+            canvas = document.getElementById('sketch-canvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+
+            window.addEventListener('resize', resizeCanvas);
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) startDrawing(e.touches[0]);
+            });
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) draw(e.touches[0]);
+            });
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function resizeCanvas() {
+            const container = document.getElementById('arena-container');
+            if (container && canvas) {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight - 60;
+            }
+        }
+
+        function setTool(tool) {
+            state.activeTool = tool;
+            ['pen', 'parallel', 'equal', 'rightangle', 'eraser'].forEach(t => {
+                const btn = document.getElementById(`tool-${t}`);
+                if (btn) {
+                    if (t === tool) {
+                        btn.className = "px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-bold flex items-center gap-1 transition shadow";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold flex items-center gap-1 transition";
+                    }
+                }
+            });
+        }
+
+        function setPenColor(c) {
+            state.penColor = c;
+            setTool('pen');
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+
+        function startDrawing(e) {
+            state.isDrawing = true;
+            const p = getPos(e);
+            state.lastX = p.x;
+            state.lastY = p.y;
+
+            if (['parallel', 'equal', 'rightangle'].includes(state.activeTool)) {
+                drawSymbol(p.x, p.y, state.activeTool);
+                state.isDrawing = false;
+            }
+        }
+
+        function draw(e) {
+            if (!state.isDrawing) return;
+            const p = getPos(e);
+
+            ctx.beginPath();
+            ctx.moveTo(state.lastX, state.lastY);
+            ctx.lineTo(p.x, p.y);
+
+            if (state.activeTool === 'pen') {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = state.penColor;
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            } else if (state.activeTool === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = 16;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+
+            state.lastX = p.x;
+            state.lastY = p.y;
+        }
+
+        function stopDrawing() { state.isDrawing = false; }
+
+        function drawSymbol(x, y, type) {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = state.penColor;
+            ctx.font = 'bold 16px sans-serif';
+            if (type === 'parallel') ctx.fillText('▶', x - 6, y + 6);
+            if (type === 'equal') ctx.fillText('||', x - 6, y + 6);
+            if (type === 'rightangle') ctx.fillText('∟', x - 6, y + 6);
+        }
+
+        function clearCanvas() {
+            if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('basket-highlight');
+        }
+        function leaveDrop(e) {
+            e.currentTarget.classList.remove('basket-highlight');
+        }
+        function dropShape(e, stepId) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('basket-highlight');
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            if (data.stepId === 'step2' || stepId === 'step2') {
+                toggleStep2Candidate(data.shapeId);
+            }
+        }
+
+        function checkStep2Result() {
+            const basket = document.getElementById('basket-step2-items').children;
+            let correct = true;
+            let count = 0;
+
+            for (let item of basket) {
+                const id = item.id.replace('cand-step2-', '');
+                const s = SHAPES_DATA.find(x => x.id === id);
+                if (s && s.parallelPairs === 2 && s.equalSides >= 2) {
+                    count++;
+                } else {
+                    correct = false;
+                }
+            }
+
+            if (correct && count === 4) {
+                confetti({ particleCount: 80, spread: 60 });
+                showToast("恭喜！成功選拔出所有合格士兵！", "fa-circle-check");
+            } else {
+                showToast("選拔結果有誤，提示：平行四邊形家族共有 4 個成員（梯形只有 1 組對邊平行）！", "fa-circle-exclamation");
+            }
+        }
+
+        function initQuiz() {
+            state.quizIndex = 0;
+            state.quizScore = 0;
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            const q = QUIZ_DATA[state.quizIndex];
+            document.getElementById('quiz-progress').innerText = `問題 ${state.quizIndex + 1} / ${QUIZ_DATA.length}`;
+            document.getElementById('quiz-question').innerText = q.q;
+
+            const opts = document.getElementById('quiz-options');
+            opts.innerHTML = q.options.map((opt, i) => `
+                <button onclick="checkAnswer(${i})" class="w-full text-left p-3 rounded-xl border-2 border-slate-100 hover:border-emerald-500 hover:bg-emerald-50 transition font-medium text-xs sm:text-sm text-slate-700 flex justify-between items-center">
+                    <span>${opt}</span>
+                    <i class="fa-regular fa-circle text-slate-300"></i>
+                </button>
+            `).join('');
+
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('btn-next-quiz').classList.add('hidden');
+        }
+
+        function checkAnswer(idx) {
+            const q = QUIZ_DATA[state.quizIndex];
+            const fb = document.getElementById('quiz-feedback');
+
+            if (idx === q.answer) {
+                state.quizScore++;
+                fb.className = "mt-4 p-3 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs sm:text-sm block";
+                fb.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> 回答正確！${q.explain}`;
+            } else {
+                fb.className = "mt-4 p-3 rounded-xl bg-red-100 text-red-900 border border-red-300 font-bold text-xs sm:text-sm block";
+                fb.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-600"></i> 回答錯誤。${q.explain}`;
+            }
+
+            document.getElementById('btn-next-quiz').classList.remove('hidden');
+        }
+
+        function nextQuizQuestion() {
+            if (state.quizIndex + 1 < QUIZ_DATA.length) {
+                state.quizIndex++;
+                renderQuizQuestion();
+            } else {
+                showQuizSummary();
+            }
+        }
+
+        function showQuizSummary() {
+            document.getElementById('quiz-question').innerText = `恭喜完成測驗！得分：${state.quizScore} / ${QUIZ_DATA.length}`;
+            document.getElementById('quiz-options').innerHTML = '';
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('btn-next-quiz').classList.add('hidden');
+            confetti({ particleCount: 100, spread: 70 });
+        }
+
+        function resetQuiz() { initQuiz(); }
+
+        /* ================= TAB SWITCHING & INITIALIZATION ================= */
+        const QUIZ_DATA = [
+            {
+                q: "1. 下列哪一種圖形只有一組對邊平行？",
+                options: ["長方形", "梯形", "平行四邊形", "菱形"],
+                answer: 1,
+                explain: "梯形是唯一只有一組對邊平行的四邊形。"
+            },
+            {
+                q: "2. 正方形同時具備長方形與菱形的特性嗎？",
+                options: ["是的，它同時是特別長方形與特別菱形", "不是，它只是特別的長方形", "不是，它只是特別的菱形", "兩者皆不是"],
+                answer: 0,
+                explain: "正方形有4個直角（符合長方形）且4邊等長（符合菱形）。"
+            },
+            {
+                q: "3. 長方形、菱形、正方形都是哪種圖形家族的成員？",
+                options: ["梯形", "五邊形", "平行四邊形", "三角形"],
+                answer: 2,
+                explain: "因為它們都具備兩組對邊平行且長度相等的特質。"
+            },
+            {
+                q: "4. 下列關於四邊形的敘述，哪一個正確？",
+                options: ["所有平行四邊形都是正方形", "正方形也是一種長方形", "梯形有兩組對邊平行", "菱形必定有4個直角"],
+                answer: 1,
+                explain: "正方形符合長方形「對邊相等 + 4個直角」的所有條件。"
+            }
+        ];
+
+        function switchTab(stepId) {
+            state.currentTab = stepId;
+
+            ['step1', 'step2', 'step3', 'step4', 'step5', 'step6'].forEach(id => {
+                const page = document.getElementById(`page-${id}`);
+                const nav = document.getElementById(`nav-${id}`);
+                if (page) page.classList.add('hidden');
+                if (nav) {
+                    nav.className = "px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 hover:bg-emerald-500/50";
+                }
+            });
+
+            // Show selected page & highlight active nav
+            const activePage = document.getElementById(`page-${stepId}`);
+            const activeNav = document.getElementById(`nav-${stepId}`);
+            if (activePage) activePage.classList.remove('hidden');
+            if (activeNav) {
+                activeNav.className = "px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 bg-white text-emerald-800 shadow font-bold";
+            }
+
+            // All qualified parallelogram family candidates
+            const qualifiedCandidates = ['sq', 'rect', 'rhombus', 'para'];
+
+            // Lazy initialization based on tab step
+            if (stepId === 'step1') {
+                renderStep1Cards();
+            } else if (stepId === 'step2') {
+                initStep2Candidates();
+            } else if (stepId === 'step3') {
+                renderVennStepCandidates('step3', qualifiedCandidates);
+            } else if (stepId === 'step4') {
+                renderVennStepCandidates('step4', qualifiedCandidates);
+            } else if (stepId === 'step6') {
+                initQuiz();
+            }
+        }
+
+        function readSquareAudio() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance("我是正方形將軍！我擁有4個直角和4條相等的邊，因此我同時是長方形戰隊和菱形戰隊的最強王牌！");
+                msg.lang = 'zh-HK';
+                window.speechSynthesis.speak(msg);
+            } else {
+                showToast("您的瀏覽器不支援語音朗讀功能", "fa-volume-xmark");
+            }
+        }
+
+        function checkSquareTitles() {
+            const checkboxes = document.querySelectorAll('.sq-title-check');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            const feedback = document.getElementById('square-check-feedback');
+
+            if (allChecked) {
+                feedback.classList.remove('hidden');
+                feedback.innerHTML = `<i class="fa-solid fa-crown text-amber-600"></i> 太厲害了！正方形同時符合這 5 種稱呼！它是全能的四邊形王者！`;
+                confetti({ particleCount: 60, spread: 50 });
+            } else {
+                feedback.classList.add('hidden');
+            }
+        }
+
+        function readStoryStep2() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance("四邊形城堡的緊急召集令！壞蛋軍團即將入侵！國王需要挑選擁有兩組對邊平行且對邊長度相等的四邊形士兵組成精銳防線。");
+                msg.lang = 'zh-HK';
+                window.speechSynthesis.speak(msg);
+            } else {
+                showToast("您的瀏覽器不支援語音朗讀功能", "fa-volume-xmark");
+            }
+        }
+
+        function readSquadAudio(squad) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let text = squad === 'rect' 
+                    ? "長方形戰隊招募令！只要具備四個直角以及對邊長度相等的四邊形士兵，就能獲准入隊成為戰隊隊員！" 
+                    : "菱形戰隊招募令！只要具備四條邊長度全部相等以及對邊平行的四邊形士兵，就能獲准入隊成為戰隊隊員！";
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-HK';
+                window.speechSynthesis.speak(msg);
+            } else {
+                showToast("您的瀏覽器不支援語音朗讀功能", "fa-volume-xmark");
+            }
+        }
+
+        // Initialize application on window load
+        window.onload = function() {
+            switchTab('step1');
+        };
+
+        function showToast(msg, icon = "fa-circle-info") {
+            const t = document.getElementById('toast-message');
+            document.getElementById('toast-text').innerText = msg;
+            document.getElementById('toast-icon').className = `fa-solid ${icon} text-amber-400 text-lg`;
+
+            t.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+            t.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                t.classList.remove('opacity-100', 'translate-y-0');
+                t.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
